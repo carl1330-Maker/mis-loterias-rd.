@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loterías RD • Resultados en vivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .last-update {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.2);
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Grid de loterías */
+        .loterias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* Tarjeta de lotería */
+        .loteria-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .loteria-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.3);
+        }
+
+        .loteria-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .loteria-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .loteria-info h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .loteria-horario {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .loteria-horario i {
+            color: #667eea;
+        }
+
+        /* Números actuales */
+        .numeros-actuales {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .numeros-actuales h4 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .numeros-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .numero {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .numero.nuevo {
+            animation: pulse 1s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5); }
+        }
+
+        /* Historial */
+        .historial {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 15px;
+        }
+
+        .historial h4 {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .historial-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .historial-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .historial-numeros {
+            display: flex;
+            gap: 8px;
+        }
+
+        .historial-numero {
+            width: 30px;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .historial-hora {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        /* Botones de control */
+        .control-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 Loterías RD</h1>
+            <p>Resultados oficiales en tiempo real • República Dominicana</p>
+            <div class="last-update" id="lastUpdate">Actualizado: cargando...</div>
+        </div>
+
+        <div id="loteriasContainer">
+            <div class="loading">Cargando loterías</div>
+        </div>
+
+        <div class="control-panel">
+            <button class="btn btn-primary" id="actualizarBtn">
+                🔄 Actualizar números
+            </button>
+            <button class="btn btn-secondary" id="reiniciarBtn">
+                📋 Reiniciar historial
+            </button>
+        </div>
+
+        <div class="footer">
+            <p>Resultados simulados para demostración • Actualización automática cada 30 segundos</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">© 2024 Loterías RD - Todos los derechos reservados</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de loterías dominicanas
+        const LOTERIAS = [
+            { id: 'loteka', nombre: 'Loteka', horarios: ['12:30 PM', '6:30 PM'], icono: '🇩🇴' },
+            { id: 'real', nombre: 'Lotería Real', horarios: ['1:00 PM', '9:00 PM'], icono: '👑' },
+            { id: 'nacional', nombre: 'Lotería Nacional', horarios: ['12:00 PM', '8:00 PM'], icono: '🇩🇴' },
+            { id: 'primitiva', nombre: 'La Primera', horarios: ['12:00 PM', '7:30 PM'], icono: '1️⃣' },
+            { id: 'suerte', nombre: 'Lotería Suerte', horarios: ['1:30 PM', '9:30 PM'], icono: '🍀' },
+            { id: 'tropical', nombre: 'Lotería Tropical', horarios: ['12:15 PM', '8:15 PM'], icono: '🌴' },
+            { id: 'leidsa', nombre: 'Leidsa', horarios: ['12:45 PM', '6:45 PM'], icono: '🎯' },
+            { id: 'king', nombre: 'Lotería King', horarios: ['2:00 PM', '10:00 PM'], icono: '👑' }
+        ];
+
+        const STORAGE_KEY = 'loteriaRD_datos';
+        const MAX_HISTORIAL = 5;
+        let intervalId = null;
+
+        // Generar números aleatorios
+        function generarNumeros() {
+            const numeros = [];
+            const cantidad = Math.random() > 0.5 ? 3 : 4; // 3 o 4 números
+            for (let i = 0; i < cantidad; i++) {
+                numeros.push(Math.floor(Math.random() * 100).toString().padStart(2, '0'));
+            }
+            return numeros;
+        }
+
+        // Obtener hora actual formateada
+        function getHoraActual() {
+            const ahora = new Date();
+            return ahora.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Cargar datos guardados
+        function cargarDatos() {
+            const guardados = localStorage.getItem(STORAGE_KEY);
+            if (guardados) {
+                try {
+                    return JSON.parse(guardados);
+                } catch (e) {
+                    console.error('Error cargando datos:', e);
+                }
+            }
+            
+            // Datos iniciales
+            const datosIniciales = {};
+            LOTERIAS.forEach(l => {
+                datosIniciales[l.id] = {
+                    numerosActuales: generarNumeros(),
+                    historial: []
+                };
+            });
+            return datosIniciales;
+        }
+
+        // Guardar datos
+        function guardarDatos(datos) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
+        }
+
+        // Actualizar números de todas las loterías
+        function actualizarTodas() {
+            const datos = cargarDatos();
+            const horaActual = getHoraActual();
+            
+            LOTERIAS.forEach(loteria => {
+                const nuevosNumeros = generarNumeros();
+                
+                // Guardar números actuales al historial antes de actualizar
+                if (datos[loteria.id].numerosActuales.length > 0) {
+                    const entradaHistorial = {
+                        numeros: datos[loteria.id].numerosActuales,
+                        hora: horaActual
+                    };
+                    
+                    datos[loteria.id].historial.unshift(entradaHistorial);
+                    
+                    // Limitar historial
+                    if (datos[loteria.id].historial.length > MAX_HISTORIAL) {
+                        datos[loteria.id].historial = datos[loteria.id].historial.slice(0, MAX_HISTORIAL);
+                    }
+                }
+                
+                // Actualizar números actuales
+                datos[loteria.id].numerosActuales = nuevosNumeros;
+            });
+            
+            guardarDatos(datos);
+            renderizarLoterias(datos);
+            actualizarTimestamp();
+            marcarNuevos();
+        }
+
+        // Actualizar timestamp
+        function actualizarTimestamp() {
+            const ahora = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                `Actualizado: ${ahora.toLocaleTimeString('es-DO', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: true 
+                })}`;
+        }
+
+        // Marcar números nuevos con animación
+        function marcarNuevos() {
+            document.querySelectorAll('.numero').forEach(num => {
+                num.classList.add('nuevo');
+                setTimeout(() => {
+                    num.classList.remove('nuevo');
+                }, 1000);
+            });
+        }
+
+        // Renderizar loterías
+        function renderizarLoterias(datos) {
+            const container = document.getElementById('loteriasContainer');
+            
+            if (!datos) {
+                container.innerHTML = '<div class="loading">Cargando...</div>';
+                return;
+            }
+
+            let html = '<div class="loterias-grid">';
+            
+            LOTERIAS.forEach(loteria => {
+                const loteriaData = datos[loteria.id] || { numerosActuales: [], historial: [] };
+                
+                html += `
+                    <div class="loteria-card" data-id="${loteria.id}">
+                        <div class="loteria-header">
+                            <div class="loteria-icon">${loteria.icono}</div>
+                            <div class="loteria-info">
+                                <h3>${loteria.nombre}</h3>
+                                <div class="loteria-horario">
+                                    <span>🕐 ${loteria.horarios.join(' - ')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="numeros-actuales">
+                            <h4>Números de hoy</h4>
+                            <div class="numeros-container">
+                `;
+                
+                loteriaData.numerosActuales.forEach(num => {
+                    html += <div class="numero">${num}</div>;
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                        
+                        <div class="historial">
+                            <h4>📊 Últimos resultados</h4>
+                            <div class="historial-lista">
+                `;
+                
+                if (loteriaData.historial.length === 0) {
+                    html += '<div style="text-align: center; color: #999; padding: 10px;">Sin historial</div>';
+                } else {
+                    loteriaData.historial.forEach(item => {
+                        html += `
+                            <div class="historial-item">
+                                <div class="historial-numeros">
+                        `;
+                        
+                        item.numeros.forEach(num => {
+                            html += <span class="historial-numero">${num}</span>;
+                        });
+                        
+                        html += `
+                                </div>
+                                <span class="historial-hora">${item.hora}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Reiniciar historial
+        function reiniciarHistorial() {
+            if (!confirm('¿Estás seguro de que quieres reiniciar todo el historial?')) {
+                return;
+            }
+            
+            const datos = {};
+            LOTERIAS.forEach(l => {
+                datos[l.id] = {
+                    numerosActuales: generarNumeros(),
+                    historial: []
+                };
+            });
+            
+            guardarDatos(datos);
+            renderizarLoterias(datos);
+            actualizarTimestamp();
+        }
+
+        // Inicializar
+        function init() {
+            const datos = cargarDatos();
+            renderizarLoterias(datos);
+            actualizarTimestamp();
+            
+            // Configurar actualización automática cada 30 segundos
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            intervalId = setInterval(actualizarTodas, 30000);
+            
+            // Event listeners
+            document.getElementById('actualizarBtn').addEventListener('click', () => {
+                actualizarTodas();
+            });
+            
+            document.getElementById('reiniciarBtn').addEventListener('click', reiniciarHistorial);
+        }
+
+        // Iniciar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Limpiar intervalo al cerrar/recargar
+        window.addEventListener('beforeunload', () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        });
+    </script>
+</body>
+</html>
