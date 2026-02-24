@@ -53,4 +53,4 @@ def buscar_numeros():
         print(f"Error general en el scraper: {e}")
 
 # Ejecutar directamente 
-   buscar_numeros()
+buscar_numeros()
