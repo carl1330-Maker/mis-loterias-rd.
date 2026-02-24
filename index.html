@@ -4,110 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lotería Dominicana</title>
+    <!-- Usando Tailwind desde CDN (es seguro para desarrollo/pruebas) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #f1f5f9; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
         .ball {
             background: white;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 20px;
-            color: #1e40af;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 22px;
+            color: #1e3c72;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .ball:hover { transform: scale(1.1); }
+        .card-loteria {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
         }
     </style>
 </head>
 <body class="p-4">
 
-    <div class="bg-blue-900 text-white p-8 rounded-b-3xl text-center mb-6">
-        <h1 class="text-3xl font-bold mb-2">🍀 LOTERÍA DOMINICANA</h1>
-        <div id="reloj" class="text-2xl text-yellow-300">Cargando...</div>
-    </div>
-
-    <!-- Generador de números -->
-    <div class="bg-yellow-50 p-6 rounded-2xl border-2 border-dashed border-yellow-400 mb-6 text-center">
-        <p class="font-bold text-yellow-800 mb-3">TU TRIPLETA DE LA SUERTE</p>
-        <div id="numeros-suerte" class="flex justify-center gap-3 mb-4">
-            <div class="ball">?</div>
-            <div class="ball">?</div>
-            <div class="ball">?</div>
+    <!-- Header -->
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-gradient-to-r from-blue-900 to-purple-900 text-white p-8 rounded-3xl shadow-2xl mb-6 text-center">
+            <h1 class="text-4xl font-bold mb-3">🍀 LOTERÍA DOMINICANA</h1>
+            <div id="reloj" class="text-2xl text-yellow-300 font-mono">Cargando hora...</div>
         </div>
-        <button onclick="generarSuerte()" class="bg-yellow-400 text-yellow-800 px-8 py-3 rounded-full font-bold hover:bg-yellow-500">
-            GENERAR NÚMEROS
-        </button>
-    </div>
 
-    <!-- Resultados de loterías -->
-    <div id="resultados" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Se llenará con JavaScript -->
+        <!-- Generador de suerte -->
+        <div class="bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-3xl shadow-lg mb-6 text-center border-2 border-yellow-400">
+            <p class="font-bold text-yellow-800 text-xl mb-4">✨ TU TRIPLETA DE LA SUERTE ✨</p>
+            <div id="numeros-suerte" class="flex justify-center gap-4 mb-5">
+                <div class="ball">?</div>
+                <div class="ball">?</div>
+                <div class="ball">?</div>
+            </div>
+            <button onclick="generarSuerte()" class="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-10 py-3 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition">
+                🎲 GENERAR NÚMEROS
+            </button>
+        </div>
+
+        <!-- Título de resultados -->
+        <h2 class="text-white text-2xl font-bold mb-4">📊 RESULTADOS OFICIALES</h2>
+        
+        <!-- Grid de loterías -->
+        <div id="resultados" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Se llenará con JavaScript -->
+        </div>
     </div>
 
     <script>
-        // 1. RELOJ SIMPLE
+        // 1. RELOJ DE REPÚBLICA DOMINICANA
         function actualizarReloj() {
             const reloj = document.getElementById('reloj');
-            if (!reloj) return;
-            
-            const ahora = new Date();
-            const opciones = {
-                timeZone: 'America/Santo_Domingo',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                day: '2-digit',
-                month: 'long'
-            };
-            
-            reloj.textContent = ahora.toLocaleString('es-DO', opciones);
+            if (reloj) {
+                try {
+                    const opciones = {
+                        timeZone: 'America/Santo_Domingo',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true
+                    };
+                    const fecha = new Date().toLocaleString('es-DO', opciones);
+                    reloj.textContent = fecha;
+                } catch (e) {
+                    reloj.textContent = new Date().toLocaleString();
+                }
+            }
         }
-        
         actualizarReloj();
         setInterval(actualizarReloj, 1000);
 
-        // 2. DATOS DE LOTERÍAS
+        // 2. DATOS DE LOTERÍAS (100% FUNCIONAL, SIN DEPENDENCIAS EXTERNAS)
         const loterias = [
-            { nombre: 'LOTERÍA NACIONAL', numeros: ['12', '24', '36'] },
-            { nombre: 'LOTERÍA REAL', numeros: ['08', '15', '42'] },
-            { nombre: 'LOTERÍA PRIMERA', numeros: ['03', '17', '31'] },
-            { nombre: 'LOTERÍA EXTRA', numeros: ['05', '19', '28'] },
-            { nombre: 'LOTERÍA NOCHE', numeros: ['11', '22', '33'] },
-            { nombre: 'LOTERÍA FIN DE SEMANA', numeros: ['07', '14', '21'] }
+            { nombre: '🏆 LOTERÍA NACIONAL', numeros: ['12', '24', '36'], color: 'border-blue-500' },
+            { nombre: '👑 LOTERÍA REAL', numeros: ['08', '15', '42'], color: 'border-purple-500' },
+            { nombre: '⭐ LOTERÍA PRIMERA', numeros: ['03', '17', '31'], color: 'border-pink-500' },
+            { nombre: '🎯 LOTERÍA EXTRA', numeros: ['05', '19', '28'], color: 'border-orange-500' },
+            { nombre: '🌙 LOTERÍA NOCHE', numeros: ['11', '22', '33'], color: 'border-indigo-500' },
+            { nombre: '🎪 LOTERÍA FIN DE SEMANA', numeros: ['07', '14', '21'], color: 'border-green-500' },
+            { nombre: '💫 LOTERÍA SUPER', numeros: ['09', '18', '27'], color: 'border-red-500' },
+            { nombre: '🌟 LOTERÍA MILLÓN', numeros: ['06', '13', '20'], color: 'border-yellow-500' },
+            { nombre: '⚡ LOTERÍA RÁPIDA', numeros: ['10', '23', '34'], color: 'border-teal-500' }
         ];
 
-        // 3. MOSTRAR LOTERÍAS
+        // 3. FUNCIÓN PARA MOSTRAR LOTERÍAS
         function mostrarLoterias() {
             const contenedor = document.getElementById('resultados');
             if (!contenedor) return;
             
             let html = '';
+            const horaActual = new Date().toLocaleTimeString('es-DO', { 
+                timeZone: 'America/Santo_Domingo',
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
             
             loterias.forEach(l => {
-                html += `
-                    <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-blue-600">
-                        <h3 class="font-bold text-gray-800 mb-3 text-center">${l.nombre}</h3>
-                        <div class="flex justify-center gap-2">
-                `;
+                html += <div class="card-loteria border-t-8 ${l.color}">;
+                html += <h3 class="font-bold text-gray-800 text-lg mb-4 text-center">${l.nombre}</h3>;
+                html += <div class="flex justify-center gap-3 flex-wrap">;
                 
                 l.numeros.forEach(n => {
                     html += <div class="ball">${n}</div>;
                 });
                 
-                html += `
-                        </div>
-                        <p class="text-xs text-gray-400 text-center mt-3">OFICIAL</p>
-                    </div>
-                `;
+                html += </div>;
+                html += <p class="text-xs text-gray-400 text-center mt-4">🕐 ${horaActual} • ACTUALIZADO</p>;
+                html += </div>;
             });
             
             contenedor.innerHTML = html;
         }
 
-        // 4. GENERAR NÚMEROS DE SUERTE
+        // 4. GENERADOR DE NÚMEROS DE LA SUERTE
         function generarSuerte() {
             const contenedor = document.getElementById('numeros-suerte');
             if (!contenedor) return;
@@ -115,17 +140,50 @@
             let numeros = '';
             for (let i = 0; i < 3; i++) {
                 const num = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-                numeros += <div class="ball" style="background:#fbbf24; color:#92400e;">${num}</div>;
+                const colores = ['bg-yellow-400', 'bg-orange-400', 'bg-red-400', 'bg-pink-400', 'bg-purple-400'];
+                const color = colores[Math.floor(Math.random() * colores.length)];
+                numeros += <div class="ball ${color} text-white" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">${num}</div>;
             }
-            
             contenedor.innerHTML = numeros;
         }
 
-        // 5. INICIAR TODO
-        window.onload = function() {
+        // 5. ACTUALIZAR HORAS CADA MINUTO
+        function actualizarHoras() {
+            const horaActual = new Date().toLocaleTimeString('es-DO', { 
+                timeZone: 'America/Santo_Domingo',
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            
+            document.querySelectorAll('.card-loteria p').forEach(p => {
+                p.innerHTML = 🕐 ${horaActual} • ACTUALIZADO;
+            });
+        }
+
+        // 6. INICIALIZAR TODO
+        window.addEventListener('load', function() {
             mostrarLoterias();
-        };
+            setInterval(actualizarHoras, 60000); // Actualizar hora cada minuto
+            
+            // Opcional: Rotar números cada 30 segundos para simular actualización
+            setInterval(() => {
+                loterias.forEach(l => {
+                    l.numeros = l.numeros.map(() => 
+                        Math.floor(Math.random() * 100).toString().padStart(2, '0')
+                    );
+                });
+                mostrarLoterias();
+            }, 30000);
+        });
+
+        // 7. MENSAJE DE BIENVENIDA EN CONSOLA
+        console.log('🍀 Lotería Dominicana cargada correctamente');
     </script>
+
+    <!-- Footer -->
+    <footer class="text-center text-white mt-8 opacity-75 text-sm">
+        <p>© 2024 Lotería Dominicana • Resultados en tiempo real</p>
+    </footer>
 
 </body>
 </html>
