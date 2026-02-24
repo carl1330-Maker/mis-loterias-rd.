@@ -52,5 +52,5 @@ def buscar_numeros():
     except Exception as e:
         print(f"Error general en el scraper: {e}")
         
-if  __name__ == "__main__":    
+if  _ _name_ _ == "_ _main_ _":    
     buscar_numeros()
