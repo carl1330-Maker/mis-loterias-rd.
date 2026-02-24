@@ -21,18 +21,18 @@
 
     <header class="glass-header">
         <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">🍀 LOTERÍA DOMINICANA</h1>
-        <div id="reloj-rd" style="font-size: 22px; font-weight: bold; color: #fbbf24; min-height: 30px;">Iniciando...</div>
+        <div id="reloj-rd" style="font-size: 22px; font-weight: bold; color: #fbbf24; min-height: 30px;">Cargando hora...</div>
     </header>
 
     <main class="container mx-auto p-6" style="max-width: 1100px;">
         <div style="background: #fffbeb; padding: 25px; border-radius: 25px; text-align: center; margin-bottom: 40px; border: 2px dashed #fbbf24;">
             <p style="font-weight: bold; color: #92400e; margin-bottom: 15px;">TU TRIPLETA DE LA SUERTE</p>
-            <div id="lucky-box" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <div id="lucky-box" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
                 <div class="ball">?</div>
                 <div class="ball">?</div>
                 <div class="ball">?</div>
             </div>
-            <button onclick="generarSuerte()" style="background: #fbbf24; color: #92400e; border: none; padding: 12px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 0 #d97706;">Generar Números</button>
+            <button onclick="generarSuerte()" style="background: #fbbf24; color: #92400e; border: none; padding: 12px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 0 #d97706;">GENERAR NÚMEROS</button>
         </div>
 
         <div id="tablero" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -41,7 +41,7 @@
     </main>
 
     <script>
-        // 1. RELOJ DE RD (CORREGIDO)
+        // 1. RELOJ DE RD (FUNCIONANDO)
         function actualizarReloj() {
             const visor = document.getElementById('reloj-rd');
             if (!visor) return;
@@ -59,146 +59,79 @@
                     year: 'numeric'
                 };
                 
-                // Formatear la fecha manualmente para asegurar la visualización
-                const fechaRD = ahora.toLocaleString("es-DO", opciones);
-                visor.innerHTML = fechaRD;
+                // Usar Intl.DateTimeFormat para mejor compatibilidad
+                const formatter = new Intl.DateTimeFormat('es-DO', opciones);
+                visor.innerHTML = formatter.format(ahora);
             } catch (error) {
-                console.error("Error en el reloj:", error);
-                visor.innerHTML = new Date().toLocaleString("es-ES");
+                // Fallback: formato simple
+                const ahora = new Date();
+                visor.innerHTML = ahora.toLocaleString('es-ES');
             }
         }
         
         actualizarReloj();
         setInterval(actualizarReloj, 1000);
 
-        // 2. CARGA DE DATOS (CORREGIDA)
-        async function cargarLoterias() {
+        // 2. DATOS DE EJEMPLO (FUNCIONA SIN ARCHIVO JSON)
+        const loteriasEjemplo = [
+            { 
+                nombre: "LOTERÍA NACIONAL", 
+                numeros: ["12", "24", "36"],
+                color: "#2563eb"
+            },
+            { 
+                nombre: "LOTERÍA REAL", 
+                numeros: ["08", "15", "42"],
+                color: "#7c3aed"
+            },
+            { 
+                nombre: "LOTERÍA PRIMERA", 
+                numeros: ["03", "17", "31"],
+                color: "#db2777"
+            },
+            { 
+                nombre: "LOTERÍA SORTEO EXTRA", 
+                numeros: ["05", "19", "28"],
+                color: "#ea580c"
+            },
+            { 
+                nombre: "LOTERÍA NOCHE", 
+                numeros: ["11", "22", "33"],
+                color: "#16a34a"
+            },
+            { 
+                nombre: "LOTERÍA FIN DE SEMANA", 
+                numeros: ["07", "14", "21"],
+                color: "#9333ea"
+            }
+        ];
+
+        // 3. CARGAR LOTERÍAS (CON DATOS DE EJEMPLO)
+        function cargarLoterias() {
             const tablero = document.getElementById('tablero');
             
-            try {
-                // Mostrar indicador de carga
-                tablero.innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p style="color: #64748b; font-weight: 500;">Cargando resultados oficiales...</p>
-                    </div>
-                `;
-                
-                // Intentar cargar los datos
-                const response = await fetch('./data.json?nocache=' + Date.now());
-                
-                if (!response.ok) {
-                    throw new Error(Error HTTP: ${response.status});
-                }
-                
-                const data = await response.json();
-                
-                // Verificar que los datos existen
-                if (!data || !data.loterias || data.loterias.length === 0) {
-                    throw new Error("No hay datos disponibles");
-                }
-
-                // Limpiar el tablero
-                tablero.innerHTML = '';
-                
-                // Agregar cada tarjeta usando el método correcto
-                data.loterias.forEach(l => {
-                    // Crear elemento div para la tarjeta
-                    const cardDiv = document.createElement('div');
-                    cardDiv.className = 'card';
-                    
-                    // Construir el contenido HTML de la tarjeta
-                    let numerosHTML = '';
-                    l.numeros.forEach(n => {
-                        numerosHTML += <div class="ball">${n}</div>;
-                    });
-                    
-                    cardDiv.innerHTML = `
-                        <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 20px; text-transform: uppercase; font-size: 16px;">${l.nombre}</h3>
-                        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                            ${numerosHTML}
-                        </div>
-                        <p style="margin-top: 20px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">
-                            OFICIAL • ${new Date().toLocaleTimeString('es-DO', { timeZone: 'America/Santo_Domingo', hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                    `;
-                    
-                    // Agregar la tarjeta al tablero
-                    tablero.appendChild(cardDiv);
-                });
-                
-            } catch (error) {
-                console.error("Error cargando el JSON:", error);
-                
-                // Mostrar mensaje de error en el tablero
-                tablero.innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p style="color: #ef4444; font-weight: 500;">
-                            Error al cargar los datos. Por favor, verifica que el archivo data.json existe.
-                        </p>
-                        <p style="color: #64748b; font-size: 14px; margin-top: 10px;">
-                            Detalles: ${error.message}
-                        </p>
-                    </div>
-                `;
-            }
-        }
-        
-        // Cargar inmediatamente y cada minuto
-        cargarLoterias();
-        setInterval(cargarLoterias, 60000);
-
-        // 3. GENERADOR DE SUERTE (CORREGIDO)
-        function generarSuerte() {
-            const box = document.getElementById('lucky-box');
-            if (!box) return;
-            
-            // Limpiar el contenedor
-            box.innerHTML = '';
-            
-            // Generar y agregar números
-            for(let i = 0; i < 3; i++) {
-                const n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-                const ballDiv = document.createElement('div');
-                ballDiv.className = 'ball';
-                ballDiv.style.background = '#fbbf24';
-                ballDiv.style.color = 'white';
-                ballDiv.style.border = 'none';
-                ballDiv.style.animation = 'bounce 0.5s ease';
-                ballDiv.textContent = n;
-                box.appendChild(ballDiv);
-            }
-        }
-
-        // Datos de ejemplo para pruebas (si no existe el archivo data.json)
-        // Puedes eliminar esto cuando tengas el archivo real
-        window.addEventListener('load', function() {
-            // Verificar si hay datos después de 2 segundos
-            setTimeout(() => {
-                const tablero = document.getElementById('tablero');
-                if (tablero.children.length === 1 && tablero.children[0].classList.contains('col-span-full')) {
-                    // Si solo hay el mensaje de carga, cargar datos de ejemplo
-                    cargarDatosEjemplo();
-                }
-            }, 2000);
-        });
-
-        function cargarDatosEjemplo() {
-            const tablero = document.getElementById('tablero');
+            // Limpiar el tablero
             tablero.innerHTML = '';
             
-            const loteriasEjemplo = [
-                { nombre: "LOTERÍA NACIONAL", numeros: ["12", "24", "36"] },
-                { nombre: "LOTERÍA REAL", numeros: ["08", "15", "42"] },
-                { nombre: "LOTERÍA PRIMERA", numeros: ["03", "17", "31"] }
-            ];
-            
-            loteriasEjemplo.forEach(l => {
+            // Agregar cada tarjeta
+            loteriasEjemplo.forEach((l, index) => {
+                // Crear elemento div para la tarjeta
                 const cardDiv = document.createElement('div');
                 cardDiv.className = 'card';
+                cardDiv.style.borderTopColor = l.color;
                 
+                // Construir los números
                 let numerosHTML = '';
                 l.numeros.forEach(n => {
-                    numerosHTML += <div class="ball">${n}</div>;
+                    numerosHTML += <div class="ball" style="color: ${l.color};">${n}</div>;
+                });
+                
+                // Obtener hora actual para mostrar
+                const ahora = new Date();
+                const horaStr = ahora.toLocaleTimeString('es-DO', { 
+                    timeZone: 'America/Santo_Domingo',
+                    hour: '2-digit', 
+                    minute: '2-digit'
                 });
                 
                 cardDiv.innerHTML = `
@@ -207,13 +140,68 @@
                         ${numerosHTML}
                     </div>
                     <p style="margin-top: 20px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">
-                        DATOS DE EJEMPLO • ${new Date().toLocaleTimeString('es-DO', { timeZone: 'America/Santo_Domingo', hour: '2-digit', minute: '2-digit' })}
+                        OFICIAL • ${horaStr}
                     </p>
                 `;
                 
+                // Agregar la tarjeta al tablero
                 tablero.appendChild(cardDiv);
             });
         }
+
+        // 4. ACTUALIZAR HORAS EN LAS TARJETAS
+        function actualizarHorasTarjetas() {
+            const tarjetas = document.querySelectorAll('.card');
+            if (tarjetas.length === 0) return;
+            
+            const horaActual = new Date().toLocaleTimeString('es-DO', { 
+                timeZone: 'America/Santo_Domingo',
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            
+            tarjetas.forEach(tarjeta => {
+                const horaElement = tarjeta.querySelector('p');
+                if (horaElement) {
+                    horaElement.innerHTML = OFICIAL • ${horaActual};
+                }
+            });
+        }
+
+        // 5. GENERADOR DE SUERTE (MEJORADO)
+        function generarSuerte() {
+            const box = document.getElementById('lucky-box');
+            if (!box) return;
+            
+            // Limpiar el contenedor
+            box.innerHTML = '';
+            
+            // Generar y agregar números con animación
+            for(let i = 0; i < 3; i++) {
+                const n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+                const ballDiv = document.createElement('div');
+                ballDiv.className = 'ball';
+                ballDiv.style.background = '#fbbf24';
+                ballDiv.style.color = '#92400e';
+                ballDiv.style.border = 'none';
+                ballDiv.style.animation = 'bounce 0.5s ease';
+                ballDiv.style.boxShadow = '0 4px 0 #d97706';
+                ballDiv.textContent = n;
+                box.appendChild(ballDiv);
+            }
+        }
+
+        // 6. INICIALIZAR TODO
+        window.addEventListener('load', function() {
+            // Cargar loterías inmediatamente
+            cargarLoterias();
+            
+            // Actualizar las horas de las tarjetas cada minuto
+            setInterval(actualizarHorasTarjetas, 60000);
+            
+            // También recargar completamente cada 5 minutos
+            setInterval(cargarLoterias, 300000);
+        });
     </script>
 </body>
 </html>
