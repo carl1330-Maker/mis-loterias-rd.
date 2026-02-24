@@ -1,15 +1,4 @@
 {
-  "actualizado": "24/02/2026 11:30 AM",
-  "loterias": [
-    { "nombre": "Gana Más", "numeros": ["67", "83", "34"] },
-    { "nombre": "Lotería Nacional", "numeros": ["35", "68", "60"] },
-    { "nombre": "Quiniela Leidsa", "numeros": ["94", "22", "59"] },
-    { "nombre": "Quiniela Real", "numeros": ["25", "67", "95"] },
-    { "nombre": "Quiniela Loteka", "numeros": ["06", "33", "42"] },
-    { "nombre": "La Primera Día", "numeros": ["49", "31", "80"] },
-    { "nombre": "Primera Noche", "numeros": ["49", "07", "69"] },
-    { "nombre": "La Suerte 12:30", "numeros": ["55", "32", "14"] },
-    { "nombre": "New York Tarde", "numeros": ["26", "52", "55"] },
-    { "nombre": "Florida Día", "numeros": ["07", "13", "47"] }
-  ]
+    "actualizado": "24/02/2026 03:26 PM",
+    "loterias": []
 }
