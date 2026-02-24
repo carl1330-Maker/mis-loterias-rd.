@@ -11,6 +11,10 @@
         .glass-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 0 0 40px 40px; }
         .ball { background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 20px; color: #1e40af; }
         .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 8px solid #2563eb; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
     </style>
 </head>
 <body>
@@ -24,79 +28,192 @@
         <div style="background: #fffbeb; padding: 25px; border-radius: 25px; text-align: center; margin-bottom: 40px; border: 2px dashed #fbbf24;">
             <p style="font-weight: bold; color: #92400e; margin-bottom: 15px;">TU TRIPLETA DE LA SUERTE</p>
             <div id="lucky-box" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
-                <div class="ball">?</div><div class="ball">?</div><div class="ball">?</div>
+                <div class="ball">?</div>
+                <div class="ball">?</div>
+                <div class="ball">?</div>
             </div>
             <button onclick="generarSuerte()" style="background: #fbbf24; color: #92400e; border: none; padding: 12px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 0 #d97706;">Generar Números</button>
         </div>
 
         <div id="tablero" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="col-span-full text-center py-10">
-                <p style="color: #64748b; font-weight: 500;">Buscando resultados oficiales...</p>
-            </div>
+            <!-- Las tarjetas se cargarán aquí -->
         </div>
     </main>
 
     <script>
-        // 1. RELOJ DE RD (BLINDADO)
+        // 1. RELOJ DE RD (CORREGIDO)
         function actualizarReloj() {
             const visor = document.getElementById('reloj-rd');
-            const ahora = new Date().toLocaleString("es-DO", {
-                timeZone: "America/Santo_Domingo",
-                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
-                day: '2-digit', month: 'long', year: 'numeric'
-            });
-            if(visor) visor.innerHTML = ahora;
-        }
-        setInterval(actualizarReloj, 1000);
-        actualizarReloj();
-
-        // 2. CARGA DE DATOS (MEJORADA CON NOCACHE)
-        async function cargarLoterias() {
+            if (!visor) return;
+            
             try {
-                // Mejora: Engaña al navegador para que siempre descargue el archivo nuevo
-                const response = await fetch('./data.json?nocache=' + Math.random());
-                const data = await response.json();
-                const tablero = document.getElementById('tablero');
+                const ahora = new Date();
+                const opciones = {
+                    timeZone: "America/Santo_Domingo",
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit', 
+                    hour12: true,
+                    day: '2-digit', 
+                    month: 'long', 
+                    year: 'numeric'
+                };
                 
-                if(!data.loterias || data.loterias.length === 0) return;
-
-                tablero.innerHTML = ''; // Limpia el mensaje de "Buscando..."
-                
-                data.loterias.forEach(l => {
-                    const htmlCard = `
-                        <div class="card">
-                            <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 20px; text-transform: uppercase; font-size: 16px;">${l.nombre}</h3>
-                            <div style="display: flex; gap: 12px; justify-content: center;">
-                                ${l.numeros.map(n => <div class="ball">${n}</div>).join('')}
-                            </div>
-                            <p style="margin-top: 20px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">OFICIAL • ACTUALIZADO</p>
-                        </div>`;
-                    tablero.innerHTML += htmlCard;
-                });
+                // Formatear la fecha manualmente para asegurar la visualización
+                const fechaRD = ahora.toLocaleString("es-DO", opciones);
+                visor.innerHTML = fechaRD;
             } catch (error) {
-                console.error("Error cargando el JSON:", error);
+                console.error("Error en el reloj:", error);
+                visor.innerHTML = new Date().toLocaleString("es-ES");
             }
         }
         
-        cargarLoterias();
-        setInterval(cargarLoterias, 60000); // Revisa cada minuto
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
 
-        // 3. GENERADOR DE SUERTE
-        function generarSuerte() {
-            const box = document.getElementById('lucky-box');
-            box.innerHTML = '';
-            for(let i=0; i<3; i++) {
-                const n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-                box.innerHTML += <div class="ball" style="background: #fbbf24; color: white; border: none; animation: bounce 0.5s ease;">${n}</div>;
+        // 2. CARGA DE DATOS (CORREGIDA)
+        async function cargarLoterias() {
+            const tablero = document.getElementById('tablero');
+            
+            try {
+                // Mostrar indicador de carga
+                tablero.innerHTML = `
+                    <div class="col-span-full text-center py-10">
+                        <p style="color: #64748b; font-weight: 500;">Cargando resultados oficiales...</p>
+                    </div>
+                `;
+                
+                // Intentar cargar los datos
+                const response = await fetch('./data.json?nocache=' + Date.now());
+                
+                if (!response.ok) {
+                    throw new Error(Error HTTP: ${response.status});
+                }
+                
+                const data = await response.json();
+                
+                // Verificar que los datos existen
+                if (!data || !data.loterias || data.loterias.length === 0) {
+                    throw new Error("No hay datos disponibles");
+                }
+
+                // Limpiar el tablero
+                tablero.innerHTML = '';
+                
+                // Agregar cada tarjeta usando el método correcto
+                data.loterias.forEach(l => {
+                    // Crear elemento div para la tarjeta
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card';
+                    
+                    // Construir el contenido HTML de la tarjeta
+                    let numerosHTML = '';
+                    l.numeros.forEach(n => {
+                        numerosHTML += <div class="ball">${n}</div>;
+                    });
+                    
+                    cardDiv.innerHTML = `
+                        <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 20px; text-transform: uppercase; font-size: 16px;">${l.nombre}</h3>
+                        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                            ${numerosHTML}
+                        </div>
+                        <p style="margin-top: 20px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">
+                            OFICIAL • ${new Date().toLocaleTimeString('es-DO', { timeZone: 'America/Santo_Domingo', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                    `;
+                    
+                    // Agregar la tarjeta al tablero
+                    tablero.appendChild(cardDiv);
+                });
+                
+            } catch (error) {
+                console.error("Error cargando el JSON:", error);
+                
+                // Mostrar mensaje de error en el tablero
+                tablero.innerHTML = `
+                    <div class="col-span-full text-center py-10">
+                        <p style="color: #ef4444; font-weight: 500;">
+                            Error al cargar los datos. Por favor, verifica que el archivo data.json existe.
+                        </p>
+                        <p style="color: #64748b; font-size: 14px; margin-top: 10px;">
+                            Detalles: ${error.message}
+                        </p>
+                    </div>
+                `;
             }
         }
-    </script>
+        
+        // Cargar inmediatamente y cada minuto
+        cargarLoterias();
+        setInterval(cargarLoterias, 60000);
 
-    <style>
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        // 3. GENERADOR DE SUERTE (CORREGIDO)
+        function generarSuerte() {
+            const box = document.getElementById('lucky-box');
+            if (!box) return;
+            
+            // Limpiar el contenedor
+            box.innerHTML = '';
+            
+            // Generar y agregar números
+            for(let i = 0; i < 3; i++) {
+                const n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+                const ballDiv = document.createElement('div');
+                ballDiv.className = 'ball';
+                ballDiv.style.background = '#fbbf24';
+                ballDiv.style.color = 'white';
+                ballDiv.style.border = 'none';
+                ballDiv.style.animation = 'bounce 0.5s ease';
+                ballDiv.textContent = n;
+                box.appendChild(ballDiv);
+            }
         }
-    </style>
+
+        // Datos de ejemplo para pruebas (si no existe el archivo data.json)
+        // Puedes eliminar esto cuando tengas el archivo real
+        window.addEventListener('load', function() {
+            // Verificar si hay datos después de 2 segundos
+            setTimeout(() => {
+                const tablero = document.getElementById('tablero');
+                if (tablero.children.length === 1 && tablero.children[0].classList.contains('col-span-full')) {
+                    // Si solo hay el mensaje de carga, cargar datos de ejemplo
+                    cargarDatosEjemplo();
+                }
+            }, 2000);
+        });
+
+        function cargarDatosEjemplo() {
+            const tablero = document.getElementById('tablero');
+            tablero.innerHTML = '';
+            
+            const loteriasEjemplo = [
+                { nombre: "LOTERÍA NACIONAL", numeros: ["12", "24", "36"] },
+                { nombre: "LOTERÍA REAL", numeros: ["08", "15", "42"] },
+                { nombre: "LOTERÍA PRIMERA", numeros: ["03", "17", "31"] }
+            ];
+            
+            loteriasEjemplo.forEach(l => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                
+                let numerosHTML = '';
+                l.numeros.forEach(n => {
+                    numerosHTML += <div class="ball">${n}</div>;
+                });
+                
+                cardDiv.innerHTML = `
+                    <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 20px; text-transform: uppercase; font-size: 16px;">${l.nombre}</h3>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        ${numerosHTML}
+                    </div>
+                    <p style="margin-top: 20px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">
+                        DATOS DE EJEMPLO • ${new Date().toLocaleTimeString('es-DO', { timeZone: 'America/Santo_Domingo', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                `;
+                
+                tablero.appendChild(cardDiv);
+            });
+        }
+    </script>
 </body>
 </html>
