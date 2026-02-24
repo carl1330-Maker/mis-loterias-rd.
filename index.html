@@ -10,10 +10,16 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
         .glass-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); }
-        .lottery-card { transition: all 0.3s ease; }
+        .lottery-card { transition: all 0.3s ease; border-radius: 2.5rem; overflow: hidden; }
         .lottery-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-        .ball { background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%); border: 1px solid #cbd5e1; }
+        .ball { 
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%); 
+            border: 1px solid #cbd5e1; 
+            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.05);
+        }
         .lucky-section { background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%); border: 2px dashed #f59e0b; }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -21,86 +27,127 @@
     <header class="glass-header text-white p-8 shadow-2xl rounded-b-[3.5rem] mb-10 text-center">
         <div class="flex justify-center items-center mb-2">
             <i class="fas fa-clover text-4xl text-yellow-400 mr-3"></i>
-            <h1 class="text-3xl font-bold tracking-tight">LOTERÍA DOMINICANA</h1>
+            <h1 class="text-3xl font-bold tracking-tight uppercase">Lotería Dominicana</h1>
         </div>
-        <p id="fecha" class="text-blue-100 font-medium text-lg">Cargando hora de RD...</p>
+        <p id="fecha-rd" class="text-blue-100 font-medium text-lg min-h-[28px]">Sincronizando hora...</p>
+        <div class="mt-4 inline-flex items-center bg-white/10 px-4 py-1 rounded-full text-[10px] uppercase tracking-widest">
+            <span class="h-2 w-2 bg-green-400 rounded-full mr-2 pulse-dot"></span> Actualización en tiempo real
+        </div>
     </header>
 
     <main class="container mx-auto px-4 max-w-6xl">
         <section class="lucky-section rounded-3xl p-6 mb-12 text-center shadow-sm">
             <h2 class="text-amber-800 font-bold text-xl mb-4"><i class="fas fa-magic mr-2"></i> Tu Tripleta de la Suerte</h2>
-            <div id="tripleta-container" class="flex justify-center gap-4 mb-4">
-                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700 shadow-sm">?</div>
-                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700 shadow-sm">?</div>
-                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700 shadow-sm">?</div>
+            <div id="tripleta-container" class="flex justify-center gap-4 mb-6">
+                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700">?</div>
+                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700">?</div>
+                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700">?</div>
             </div>
-            <button onclick="generarTripleta()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-full transition shadow-md text-sm uppercase tracking-widest">
+            <button onclick="generarTripleta()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-full transition-all shadow-md active:scale-95 text-sm uppercase tracking-widest">
                 Generar Números
             </button>
         </section>
 
         <div id="grid-loterias" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
+            <div class="col-span-full text-center py-10">
+                <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
+                <p class="text-gray-500 font-medium">Cargando resultados oficiales...</p>
             </div>
+        </div>
     </main>
 
+    <footer class="text-center py-10 border-t border-gray-200">
+        <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">© 2026 RD-LOTTO PRO • PUERTO PLATA</p>
+    </footer>
+
     <script>
+        // Configuración de Identidad de Loterías
         const configLoterias = {
-            "Gana Más": { color: "border-blue-600", icon: "fas fa-star" },
-            "Lotería Nacional": { color: "border-indigo-900", icon: "fas fa-flag" },
-            "Quiniela Leidsa": { color: "border-orange-500", icon: "fas fa-ticket" },
-            "Quiniela Real": { color: "border-red-600", icon: "fas fa-crown" },
-            "Quiniela Loteka": { color: "border-purple-600", icon: "fas fa-gem" },
-            "La Primera Día": { color: "border-pink-500", icon: "fas fa-sun" },
-            "Primera Noche": { color: "border-blue-900", icon: "fas fa-moon" },
-            "La Suerte 12:30": { color: "border-green-600", icon: "fas fa-clover" },
-            "La Suerte 6:00": { color: "border-green-800", icon: "fas fa-leaf" },
-            "New York Tarde": { color: "border-yellow-500", icon: "fas fa-city" }
+            "Gana Más": { color: "border-blue-600", icon: "fas fa-star text-blue-600" },
+            "Lotería Nacional": { color: "border-indigo-900", icon: "fas fa-flag text-indigo-900" },
+            "Quiniela Leidsa": { color: "border-orange-500", icon: "fas fa-ticket text-orange-500" },
+            "Quiniela Real": { color: "border-red-600", icon: "fas fa-crown text-red-600" },
+            "Quiniela Loteka": { color: "border-purple-600", icon: "fas fa-gem text-purple-600" },
+            "La Primera Día": { color: "border-pink-500", icon: "fas fa-sun text-pink-500" },
+            "Primera Noche": { color: "border-blue-900", icon: "fas fa-moon text-blue-900" },
+            "La Suerte 12:30": { color: "border-green-600", icon: "fas fa-clover text-green-600" },
+            "La Suerte 6:00": { color: "border-green-800", icon: "fas fa-leaf text-green-800" },
+            "New York Tarde": { color: "border-yellow-500", icon: "fas fa-city text-yellow-500" },
+            "Florida Día": { color: "border-cyan-600", icon: "fas fa-palm-tree text-cyan-600" }
         };
 
-        async function cargarDatos() {
+        // Función para cargar los datos del JSON
+        async function cargarResultados() {
             try {
-                const response = await fetch('data.json?v=' + Date.now());
+                const response = await fetch('data.json?cache_bust=' + Date.now());
+                if (!response.ok) throw new Error('Error al leer datos');
                 const data = await response.json();
+                
                 const grid = document.getElementById('grid-loterias');
-                grid.innerHTML = '';
+                if (!data.loterias || data.loterias.length === 0) return;
 
+                grid.innerHTML = '';
                 data.loterias.forEach(lot => {
-                    const conf = configLoterias[lot.nombre] || { color: "border-gray-300", icon: "fas fa-circle" };
+                    const estilo = configLoterias[lot.nombre] || { color: "border-gray-300", icon: "fas fa-dot-circle text-gray-300" };
                     const card = `
-                        <div class="lottery-card bg-white rounded-[2.5rem] p-7 border-l-[12px] ${conf.color} shadow-sm">
-                            <div class="flex justify-between items-center mb-6">
+                        <div class="lottery-card bg-white p-7 border-l-[12px] ${estilo.color} shadow-sm">
+                            <div class="flex justify-between items-center mb-8">
                                 <h3 class="font-bold text-gray-800 text-xl">${lot.nombre}</h3>
-                                <i class="${conf.icon} ${conf.color.replace('border-', 'text-')} opacity-30 text-xl"></i>
+                                <i class="${estilo.icon} text-xl opacity-40"></i>
                             </div>
-                            <div class="flex justify-center gap-3 mb-6">
-                                ${lot.numeros.map(n => <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-gray-700 shadow-inner">${n}</div>).join('')}
+                            <div class="flex justify-center gap-3 mb-8">
+                                ${lot.numeros.map(n => `
+                                    <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-gray-700 shadow-md">
+                                        ${n}
+                                    </div>
+                                `).join('')}
                             </div>
-                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center border-t pt-4">Oficial • Sincronizado</div>
-                        </div>`;
+                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] text-center border-t pt-5">
+                                Verificado • ${new Date().toLocaleDateString()}
+                            </div>
+                        </div>
+                    `;
                     grid.innerHTML += card;
                 });
-            } catch (e) { console.error(e); }
+            } catch (error) {
+                console.error("Fallo al cargar resultados:", error);
+            }
         }
 
+        // Generador de Tripleta Aleatoria
         function generarTripleta() {
             const container = document.getElementById('tripleta-container');
             container.innerHTML = '';
             for(let i=0; i<3; i++) {
                 const num = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-                container.innerHTML += <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700 shadow-md animate-bounce">${num}</div>;
+                container.innerHTML += `
+                    <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700 shadow-md animate-bounce">
+                        ${num}
+                    </div>
+                `;
             }
         }
 
+        // Reloj de República Dominicana
         function actualizarReloj() {
-            const opciones = { timeZone: 'America/Santo_Domingo', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-            document.getElementById('fecha').textContent = new Date().toLocaleString('es-DO', opciones);
+            const options = { 
+                timeZone: 'America/Santo_Domingo', 
+                day: '2-digit', month: 'long', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: true 
+            };
+            const visor = document.getElementById('fecha-rd');
+            if (visor) {
+                visor.textContent = new Date().toLocaleString('es-DO', options);
+            }
         }
 
+        // Inicio
         document.addEventListener("DOMContentLoaded", () => {
             actualizarReloj();
-            cargarDatos();
-            setInterval(actualizarReloj, 1000);
-            setInterval(cargarDatos, 60000);
+            cargarResultados();
+            setInterval(actualizarReloj, 1000); // Reloj cada segundo
+            setInterval(cargarResultados, 60000); // Datos cada minuto
         });
     </script>
 </body>
