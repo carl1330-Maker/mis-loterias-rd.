@@ -3,152 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotería Dominicana Pro | Resultados y Pronósticos</title>
+    <title>Lotería Dominicana Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f0f4f8; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f1f5f9; margin: 0; }
         .glass-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); }
-        .lottery-card { transition: all 0.3s ease; border-radius: 2.5rem; overflow: hidden; }
-        .lottery-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-        .ball { 
-            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 100%); 
-            border: 1px solid #cbd5e1; 
-            box-shadow: inset -2px -2px 5px rgba(0,0,0,0.05);
-        }
-        .lucky-section { background: linear-gradient(135deg, #fef3c7 0%, #fff7ed 100%); border: 2px dashed #f59e0b; }
-        .pulse-dot { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .lottery-card { transition: all 0.3s ease; border-radius: 2rem; background: white; }
+        .ball { background: radial-gradient(circle at 30% 30%, #ffffff 0%, #cbd5e1 100%); }
     </style>
 </head>
 <body>
 
-    <header class="glass-header text-white p-8 shadow-2xl rounded-b-[3.5rem] mb-10 text-center">
-        <div class="flex justify-center items-center mb-2">
-            <i class="fas fa-clover text-4xl text-yellow-400 mr-3"></i>
-            <h1 class="text-3xl font-bold tracking-tight uppercase">Lotería Dominicana</h1>
-        </div>
-        <p id="fecha-rd" class="text-blue-100 font-medium text-lg min-h-[28px]">Sincronizando hora...</p>
-        <div class="mt-4 inline-flex items-center bg-white/10 px-4 py-1 rounded-full text-[10px] uppercase tracking-widest">
-            <span class="h-2 w-2 bg-green-400 rounded-full mr-2 pulse-dot"></span> Actualización en tiempo real
-        </div>
+    <header class="glass-header text-white p-10 shadow-2xl rounded-b-[3rem] mb-10 text-center">
+        <h1 class="text-3xl font-bold mb-2"><i class="fas fa-clover text-yellow-400 mr-2"></i> LOTERÍA DOMINICANA</h1>
+        <p id="reloj-digital" class="text-blue-100 font-bold text-xl tracking-wider">Iniciando Reloj...</p>
     </header>
 
-    <main class="container mx-auto px-4 max-w-6xl">
-        <section class="lucky-section rounded-3xl p-6 mb-12 text-center shadow-sm">
-            <h2 class="text-amber-800 font-bold text-xl mb-4"><i class="fas fa-magic mr-2"></i> Tu Tripleta de la Suerte</h2>
-            <div id="tripleta-container" class="flex justify-center gap-4 mb-6">
-                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700">?</div>
-                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700">?</div>
-                <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700">?</div>
+    <main class="container mx-auto px-4 max-w-5xl">
+        <div class="bg-amber-50 rounded-3xl p-6 mb-10 text-center border-2 border-dashed border-amber-300">
+            <h2 class="text-amber-800 font-bold mb-4">TU TRIPLETA DE HOY</h2>
+            <div id="lucky-box" class="flex justify-center gap-4 mb-4">
+                <div class="ball w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-amber-800">?</div>
+                <div class="ball w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-amber-800">?</div>
+                <div class="ball w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-amber-800">?</div>
             </div>
-            <button onclick="generarTripleta()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-full transition-all shadow-md active:scale-95 text-sm uppercase tracking-widest">
-                Generar Números
-            </button>
-        </section>
-
-        <div id="grid-loterias" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
-            <div class="col-span-full text-center py-10">
-                <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
-                <p class="text-gray-500 font-medium">Cargando resultados oficiales...</p>
-            </div>
+            <button onclick="sorteoRapido()" class="bg-amber-500 text-white px-8 py-2 rounded-full font-bold shadow-lg uppercase text-xs tracking-widest hover:bg-amber-600">Generar</button>
         </div>
+
+        <div id="tablero" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+            </div>
     </main>
 
-    <footer class="text-center py-10 border-t border-gray-200">
-        <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">© 2026 RD-LOTTO PRO • PUERTO PLATA</p>
-    </footer>
-
     <script>
-        // Configuración de Identidad de Loterías
-        const configLoterias = {
-            "Gana Más": { color: "border-blue-600", icon: "fas fa-star text-blue-600" },
-            "Lotería Nacional": { color: "border-indigo-900", icon: "fas fa-flag text-indigo-900" },
-            "Quiniela Leidsa": { color: "border-orange-500", icon: "fas fa-ticket text-orange-500" },
-            "Quiniela Real": { color: "border-red-600", icon: "fas fa-crown text-red-600" },
-            "Quiniela Loteka": { color: "border-purple-600", icon: "fas fa-gem text-purple-600" },
-            "La Primera Día": { color: "border-pink-500", icon: "fas fa-sun text-pink-500" },
-            "Primera Noche": { color: "border-blue-900", icon: "fas fa-moon text-blue-900" },
-            "La Suerte 12:30": { color: "border-green-600", icon: "fas fa-clover text-green-600" },
-            "La Suerte 6:00": { color: "border-green-800", icon: "fas fa-leaf text-green-800" },
-            "New York Tarde": { color: "border-yellow-500", icon: "fas fa-city text-yellow-500" },
-            "Florida Día": { color: "border-cyan-600", icon: "fas fa-palm-tree text-cyan-600" }
-        };
+        // 1. RELOJ DE RD (BLINDADO)
+        function moverReloj() {
+            const display = document.getElementById('reloj-digital');
+            const ahora = new Date().toLocaleString("en-US", {timeZone: "America/Santo_Domingo"});
+            const fechaRD = new Date(ahora);
+            
+            const opciones = { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            if(display) {
+                display.innerText = fechaRD.toLocaleString('es-DO', opciones);
+            }
+        }
+        setInterval(moverReloj, 1000);
+        moverReloj();
 
-        // Función para cargar los datos del JSON
-        async function cargarResultados() {
+        // 2. CARGAR RESULTADOS
+        async function traerPremios() {
             try {
-                const response = await fetch('data.json?cache_bust=' + Date.now());
-                if (!response.ok) throw new Error('Error al leer datos');
-                const data = await response.json();
+                const res = await fetch('data.json?v=' + Date.now());
+                const data = await res.json();
+                const tablero = document.getElementById('tablero');
                 
-                const grid = document.getElementById('grid-loterias');
-                if (!data.loterias || data.loterias.length === 0) return;
+                if(!data.loterias) return;
+                tablero.innerHTML = '';
 
-                grid.innerHTML = '';
-                data.loterias.forEach(lot => {
-                    const estilo = configLoterias[lot.nombre] || { color: "border-gray-300", icon: "fas fa-dot-circle text-gray-300" };
+                data.loterias.forEach(l => {
                     const card = `
-                        <div class="lottery-card bg-white p-7 border-l-[12px] ${estilo.color} shadow-sm">
-                            <div class="flex justify-between items-center mb-8">
-                                <h3 class="font-bold text-gray-800 text-xl">${lot.nombre}</h3>
-                                <i class="${estilo.icon} text-xl opacity-40"></i>
+                        <div class="lottery-card p-6 shadow-md border-t-8 border-blue-600">
+                            <h3 class="font-bold text-gray-700 mb-6 text-lg uppercase">${l.nombre}</h3>
+                            <div class="flex justify-center gap-2">
+                                ${l.numeros.map(n => <div class="ball w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-gray-700 shadow-inner">${n}</div>).join('')}
                             </div>
-                            <div class="flex justify-center gap-3 mb-8">
-                                ${lot.numeros.map(n => `
-                                    <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-gray-700 shadow-md">
-                                        ${n}
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] text-center border-t pt-5">
-                                Verificado • ${new Date().toLocaleDateString()}
-                            </div>
-                        </div>
-                    `;
-                    grid.innerHTML += card;
+                        </div>`;
+                    tablero.innerHTML += card;
                 });
-            } catch (error) {
-                console.error("Fallo al cargar resultados:", error);
-            }
+            } catch (e) { console.log("Esperando datos..."); }
         }
+        traerPremios();
+        setInterval(traerPremios, 60000);
 
-        // Generador de Tripleta Aleatoria
-        function generarTripleta() {
-            const container = document.getElementById('tripleta-container');
-            container.innerHTML = '';
+        // 3. GENERADOR
+        function sorteoRapido() {
+            const box = document.getElementById('lucky-box');
+            box.innerHTML = '';
             for(let i=0; i<3; i++) {
-                const num = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-                container.innerHTML += `
-                    <div class="ball w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-700 shadow-md animate-bounce">
-                        ${num}
-                    </div>
-                `;
+                const n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+                box.innerHTML += <div class="ball w-12 h-12 rounded-full flex items-center justify-center font-bold text-xl text-amber-800 shadow-md animate-bounce">${n}</div>;
             }
         }
-
-        // Reloj de República Dominicana
-        function actualizarReloj() {
-            const options = { 
-                timeZone: 'America/Santo_Domingo', 
-                day: '2-digit', month: 'long', year: 'numeric',
-                hour: '2-digit', minute: '2-digit', second: '2-digit', 
-                hour12: true 
-            };
-            const visor = document.getElementById('fecha-rd');
-            if (visor) {
-                visor.textContent = new Date().toLocaleString('es-DO', options);
-            }
-        }
-
-        // Inicio
-        document.addEventListener("DOMContentLoaded", () => {
-            actualizarReloj();
-            cargarResultados();
-            setInterval(actualizarReloj, 1000); // Reloj cada segundo
-            setInterval(cargarResultados, 60000); // Datos cada minuto
-        });
     </script>
 </body>
 </html>
