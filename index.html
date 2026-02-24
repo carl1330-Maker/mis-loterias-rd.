@@ -9,74 +9,94 @@
     <style>
         body { font-family: sans-serif; background-color: #f1f5f9; margin: 0; }
         .glass-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: white; padding: 40px 20px; text-align: center; border-radius: 0 0 40px 40px; }
-        .ball { background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 8px solid #2563eb; }
+        .ball { background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 20px; color: #1e40af; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 8px solid #2563eb; }
     </style>
 </head>
 <body>
 
     <header class="glass-header">
-        <h1 style="font-size: 24px; margin-bottom: 10px;">LOTERÍA DOMINICANA</h1>
-        <div id="reloj-rd" style="font-size: 20px; font-weight: bold; color: #fbbf24;">Cargando...</div>
+        <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">🍀 LOTERÍA DOMINICANA</h1>
+        <div id="reloj-rd" style="font-size: 22px; font-weight: bold; color: #fbbf24; min-height: 30px;">Iniciando...</div>
     </header>
 
-    <main class="container mx-auto p-4" style="max-width: 1000px;">
-        <div style="background: #fffbeb; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 30px; border: 2px dashed #fbbf24;">
-            <p style="font-weight: bold; color: #92400e;">TRIPLETA DE LA SUERTE</p>
-            <div id="lucky-box" style="display: flex; justify-content: center; gap: 10px; margin: 15px 0;">
+    <main class="container mx-auto p-6" style="max-width: 1100px;">
+        <div style="background: #fffbeb; padding: 25px; border-radius: 25px; text-align: center; margin-bottom: 40px; border: 2px dashed #fbbf24;">
+            <p style="font-weight: bold; color: #92400e; margin-bottom: 15px;">TU TRIPLETA DE LA SUERTE</p>
+            <div id="lucky-box" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
                 <div class="ball">?</div><div class="ball">?</div><div class="ball">?</div>
             </div>
-            <button onclick="generarNum()" style="background: #fbbf24; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer;">Generar</button>
+            <button onclick="generarSuerte()" style="background: #fbbf24; color: #92400e; border: none; padding: 12px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 14px; box-shadow: 0 4px 0 #d97706;">Generar Números</button>
         </div>
 
-        <div id="tablero" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="tablero" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="col-span-full text-center py-10">
+                <p style="color: #64748b; font-weight: 500;">Buscando resultados oficiales...</p>
             </div>
+        </div>
     </main>
 
     <script>
-        // 1. RELOJ (PRUEBA DE FUEGO)
+        // 1. RELOJ DE RD (BLINDADO)
         function actualizarReloj() {
-            const el = document.getElementById('reloj-rd');
-            const fecha = new Date().toLocaleString("es-DO", {
+            const visor = document.getElementById('reloj-rd');
+            const ahora = new Date().toLocaleString("es-DO", {
                 timeZone: "America/Santo_Domingo",
                 hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true,
                 day: '2-digit', month: 'long', year: 'numeric'
             });
-            if(el) el.innerHTML = fecha;
+            if(visor) visor.innerHTML = ahora;
         }
         setInterval(actualizarReloj, 1000);
         actualizarReloj();
 
-        // 2. DATOS
-        async function cargar() {
+        // 2. CARGA DE DATOS (MEJORADA CON NOCACHE)
+        async function cargarLoterias() {
             try {
-                const r = await fetch('data.json?v=' + Date.now());
-                const d = await r.json();
-                const t = document.getElementById('tablero');
-                if(!d.loterias) return;
-                t.innerHTML = '';
-                d.loterias.forEach(l => {
-                    t.innerHTML += `
+                // Mejora: Engaña al navegador para que siempre descargue el archivo nuevo
+                const response = await fetch('./data.json?nocache=' + Math.random());
+                const data = await response.json();
+                const tablero = document.getElementById('tablero');
+                
+                if(!data.loterias || data.loterias.length === 0) return;
+
+                tablero.innerHTML = ''; // Limpia el mensaje de "Buscando..."
+                
+                data.loterias.forEach(l => {
+                    const htmlCard = `
                         <div class="card">
-                            <p style="font-weight: bold; color: #334155; margin-bottom: 15px; text-transform: uppercase;">${l.nombre}</p>
-                            <div style="display: flex; gap: 10px; justify-content: center;">
+                            <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 20px; text-transform: uppercase; font-size: 16px;">${l.nombre}</h3>
+                            <div style="display: flex; gap: 12px; justify-content: center;">
                                 ${l.numeros.map(n => <div class="ball">${n}</div>).join('')}
                             </div>
+                            <p style="margin-top: 20px; font-size: 10px; color: #94a3b8; font-weight: bold; letter-spacing: 1px;">OFICIAL • ACTUALIZADO</p>
                         </div>`;
+                    tablero.innerHTML += htmlCard;
                 });
-            } catch(e) { console.log("Error de datos"); }
+            } catch (error) {
+                console.error("Error cargando el JSON:", error);
+            }
         }
-        cargar();
+        
+        cargarLoterias();
+        setInterval(cargarLoterias, 60000); // Revisa cada minuto
 
-        // 3. SUERTE
-        function generarNum() {
-            const b = document.getElementById('lucky-box');
-            b.innerHTML = '';
+        // 3. GENERADOR DE SUERTE
+        function generarSuerte() {
+            const box = document.getElementById('lucky-box');
+            box.innerHTML = '';
             for(let i=0; i<3; i++) {
-                const n = Math.floor(Math.random()*100).toString().padStart(2,'0');
-                b.innerHTML += <div class="ball" style="background:#fbbf24; color:white;">${n}</div>;
+                const n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+                box.innerHTML += <div class="ball" style="background: #fbbf24; color: white; border: none; animation: bounce 0.5s ease;">${n}</div>;
             }
         }
     </script>
+
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
 </body>
 </html>
