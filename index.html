@@ -97,63 +97,34 @@
                         </div>
                     `;
                     grid.innerHTML += card;
-                });
-           
+
+});
+    } catch (e) {
+        console.error("Error:", e);
     }
 }
 
-[1:26 a.m., 24/2/2026] Ｃ么ＲＬ㋡Ｓ: function actualizarFechaRD() {
+function actualizarFechaRD() {
     const opciones = { 
         timeZone: 'America/Santo_Domingo', 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
+        year: 'numeric', month: '2-digit', day: '2-digit', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit', 
         hour12: true 
     };
     const fechaRD = new Date().toLocaleString('es-DO', opciones);
-    const elementoFecha = document.querySelector('p.text-blue-100') || document.getElementById('fecha');
+    const elementoFecha = document.querySelector('header p.text-blue-100');
     if (elementoFecha) {
         elementoFecha.textContent = fechaRD;
     }
 }
 
-// Ejecutarlo de una vez
+// Ejecutar al cargar la página
 actualizarFechaRD();
-[1:30 a.m., 24/2/2026] Ｃ么ＲＬ㋡Ｓ: } catch (e) {
-        console.error("Error:", e);
-    }
-}
+cargarDatos();
 
-// --- FUNCIÓN PARA LA HORA DE RD ---
-function ponerHoraRD() {
-    const opciones = { 
-        timeZone: 'America/Santo_Domingo', 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: true 
-    };
-    const fechaRD = new Date().toLocaleString('es-DO', opciones);
-    
-    // Esto busca el texto donde dice la fecha y lo cambia
-    const textoFecha = document.querySelector('header p.text-blue-100');
-    if (textoFecha) {
-        textoFecha.textContent = fechaRD;
-    }
-}
-
-// Ejecutar todo al cargar
-document.addEventListener("DOMContentLoaded", () => {
-    cargarDatos();
-    ponerHoraRD();
-    // Actualizar la hora cada minuto sin recargar
-    setInterval(ponerHoraRD, 60000);
-});
+// Refrescar hora cada segundo y datos cada 5 minutos
+setInterval(actualizarFechaRD, 1000);
+setInterval(cargarDatos, 300000);
 </script>
 </body>
 </html>
